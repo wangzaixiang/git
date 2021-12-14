@@ -3972,7 +3972,7 @@ static int diff_populate_gitlink(struct diff_filespec *s, int size_only)
  * grab the data for the blob (or file) for our own in-core comparison.
  * diff_filespec has data and size fields for this purpose.
  */
-int diff_populate_filespec(struct repository *r,
+int diff_populate_filespec0(struct repository *r,
 			   struct diff_filespec *s,
 			   const struct diff_populate_filespec_options *options)
 {
@@ -4112,6 +4112,22 @@ object_read:
 		s->should_free = 1;
 	}
 	return 0;
+}
+
+// TODO wzx here populate info into *s, hack here for decoded data
+// s->data, s->size
+int diff_populate_filespec(struct repository *r,
+			   struct diff_filespec *s,
+			   const struct diff_populate_filespec_options *options) {
+	int err = diff_populate_filespec0(r, s, options);
+	if(err == 0){
+		// test for .java file only
+		// update s->data && s->size for decode
+		return 0;
+	}
+	else {
+		return err;
+	}
 }
 
 void diff_free_filespec_blob(struct diff_filespec *s)
