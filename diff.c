@@ -4128,10 +4128,14 @@ int diff_populate_filespec(struct repository *r,
 		if(ends_with(s->path, ".java") && buffer_is_binary(s->data, s->size)){
 			void *buf;
 			unsigned long size;
-			if(decode_km(s->path, s->data, s->size, &buf, &size) == 0){
+			int err2 = decode_km(s->path, s->data, s->size, &buf, &size);
+			if(err2 == 0){
 				free(s->data);
 				s->data = buf;
 				s->size = size;
+			}
+			else {
+				fprintf(stderr, "!!! decode_km failed code %d\n", err2);
 			}
 		}
 		return 0;
@@ -4172,23 +4176,27 @@ int decode_km(char *path, void *data, unsigned long size, void **decoded_data,
 	else if(child > 0){
 		close(child_stdin[0]);
 		close(child_stdout[1]);
-		do_write(child_stdin[1], (char*)data, size);
+		if( do_write(child_stdin[1], (char*)data, size) != 0){
+			return -3;
+		};
 		close(child_stdin[1]);
 
 		void *buf;
 		unsigned  long size;
-		do_read(child_stdout[0], &buf, &size);
+		if( do_read(child_stdout[0], &buf, &size) != 0){
+			return  -4;
+		}
 
 		int status = 0;
 		if(waitpid(child, &status, 0) <0){
 			close(child_stdout[0]);
-			return -3;
+			return -5;
 		}
 		if(WIFEXITED(status)){
 			return -1 * WEXITSTATUS(status);
 		}
 		else {
-			return -4;
+			return -6;
 		}
 	}
 	return 0;
