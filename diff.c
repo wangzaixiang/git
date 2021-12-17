@@ -4125,7 +4125,7 @@ int diff_populate_filespec(struct repository *r,
 	if(err == 0){
 		// test for .java file only
 		// update s->data && s->size for decode
-		if(ends_with(s->path, ".java") && buffer_is_binary(s->data, s->size)){
+		if(ends_with(s->path, ".java") && s->data != NULL && buffer_is_binary(s->data, s->size)){
 			void *buf;
 			unsigned long size;
 			int err2 = decode_km(s->path, s->data, s->size, &buf, &size);
@@ -4181,9 +4181,7 @@ int decode_km(char *path, void *data, unsigned long size, void **decoded_data,
 		};
 		close(child_stdin[1]);
 
-		void *buf;
-		unsigned  long size;
-		if( do_read(child_stdout[0], &buf, &size) != 0){
+		if( do_read(child_stdout[0], decoded_data, decoded_size) != 0){
 			return  -4;
 		}
 
