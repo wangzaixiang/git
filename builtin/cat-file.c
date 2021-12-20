@@ -16,6 +16,7 @@
 #include "packfile.h"
 #include "object-store.h"
 #include "promisor-remote.h"
+#include "km_decode.h"
 
 struct batch_options {
 	int enabled;
@@ -186,6 +187,16 @@ static int cat_one_file(int opt, const char *exp_type, const char *obj_name,
 
 	if (!buf)
 		die("git cat-file %s: bad file", obj_name);
+
+	if(ends_with(obj_name, ".java")){
+		void *decoded_data = NULL;
+		long decoded_size;
+		if(decode_km(obj_name, buf, size, &decoded_data, &decoded_size) == 0){
+			free(buf);
+			buf = decoded_data;
+			size = decoded_size;
+		}
+	}
 
 	write_or_die(1, buf, size);
 	free(buf);
