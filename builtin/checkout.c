@@ -268,9 +268,9 @@ static int checkout_merged(int pos, const struct checkout *state,
 	if (is_null_oid(&threeway[1]) || is_null_oid(&threeway[2]))
 		return error(_("path '%s' does not have necessary versions"), path);
 
-	read_mmblob(&ancestor, &threeway[0]);
-	read_mmblob(&ours, &threeway[1]);
-	read_mmblob(&theirs, &threeway[2]);
+	read_mmblob_decode(NULL, &ancestor, &threeway[0]);
+	read_mmblob_decode(NULL, &ours, &threeway[1]);
+	read_mmblob_decode(NULL, &theirs, &threeway[2]);
 
 	memset(&ll_opts, 0, sizeof(ll_opts));
 	git_config_get_bool("merge.renormalize", &renormalize);

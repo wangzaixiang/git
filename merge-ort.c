@@ -1780,9 +1780,9 @@ static int merge_3way(struct merge_options *opt,
 		name2 = mkpathdup("%s:%s", opt->branch2,  pathnames[2]);
 	}
 
-	read_mmblob(&orig, o);
-	read_mmblob(&src1, a);
-	read_mmblob(&src2, b);
+	read_mmblob_decode(path, &orig, o);
+	read_mmblob_decode(path, &src1, a);
+	read_mmblob_decode(path, &src2, b);
 
 	merge_status = ll_merge(result_buf, path, &orig, base,
 				&src1, name1, &src2, name2,

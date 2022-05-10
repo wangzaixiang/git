@@ -1078,9 +1078,9 @@ static int merge_3way(struct merge_options *opt,
 		name2 = mkpathdup("%s", branch2);
 	}
 
-	read_mmblob(&orig, &o->oid);
-	read_mmblob(&src1, &a->oid);
-	read_mmblob(&src2, &b->oid);
+	read_mmblob_decode(NULL, &orig, &o->oid);
+	read_mmblob_decode(NULL, &src1, &a->oid);
+	read_mmblob_decode(NULL, &src2, &b->oid);
 
 	/*
 	 * FIXME: Using a->path for normalization rules in ll_merge could be

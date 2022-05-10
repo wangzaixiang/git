@@ -7,6 +7,7 @@
 #include "xdiff/xemit.h"
 #include "xdiff/xmacros.h"
 #include "xdiff/xutils.h"
+#include "km_decode.h"
 
 struct xdiff_emit_state {
 	xdiff_emit_hunk_fn hunk_fn;
@@ -187,6 +188,19 @@ void read_mmblob(mmfile_t *ptr, const struct object_id *oid)
 	if (!ptr->ptr || type != OBJ_BLOB)
 		die("unable to read blob object %s", oid_to_hex(oid));
 	ptr->size = size;
+}
+
+void read_mmblob_decode(char *path, mmfile_t *ptr, const struct object_id *oid) {
+	read_mmblob(ptr, oid);
+	if(ptr->ptr != NULL) {
+		void *buffer;
+		unsigned long size;
+		if( decode_km(path, ptr->ptr, ptr->size, &buffer, &size) == 0){
+			free(ptr->ptr);
+			ptr->ptr = buffer;
+			ptr->size = size;
+		}
+	}
 }
 
 #define FIRST_FEW_BYTES 8000

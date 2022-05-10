@@ -3500,9 +3500,9 @@ static int three_way_merge(struct apply_state *state,
 	else if (oideq(base, theirs) || oideq(ours, theirs))
 		return resolve_to(image, ours);
 
-	read_mmblob(&base_file, base);
-	read_mmblob(&our_file, ours);
-	read_mmblob(&their_file, theirs);
+	read_mmblob_decode(path, &base_file, base);
+	read_mmblob_decode(path, &our_file, ours);
+	read_mmblob_decode(path, &their_file, theirs);
 	status = ll_merge(&result, path,
 			  &base_file, "base",
 			  &our_file, "ours",
