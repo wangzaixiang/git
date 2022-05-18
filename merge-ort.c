@@ -37,6 +37,7 @@
 #include "tree.h"
 #include "unpack-trees.h"
 #include "xdiff-interface.h"
+#include "km_decode.h"
 
 /*
  * We have many arrays of size 3.  Whenever we have such an array, the
@@ -1887,7 +1888,7 @@ static int handle_content_merge(struct merge_options *opt,
 			ret = err(opt, _("Failed to execute internal merge"));
 
 		if (!ret &&
-		    write_object_file(result_buf.ptr, result_buf.size,
+		    write_object_file_km(path, result_buf.ptr, result_buf.size,
 				      blob_type, &result->oid))
 			ret = err(opt, _("Unable to add %s to database"),
 				  path);

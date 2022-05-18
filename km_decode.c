@@ -3,6 +3,7 @@
 //
 
 #include "builtin.h"
+#include "object-store.h"
 #include "km_decode.h"
 #include "unistd.h"
 #include "stdio.h"
@@ -11,7 +12,9 @@
 
 static int do_write(int fd, char *data, unsigned long size);
 static int do_read(int fd, void **data, unsigned long *size);
-int decode_km(char *path, void *data, unsigned long size, void **decoded_data,
+
+
+static int decode_encode_km(int decode, char *path, void *data, unsigned long size, void **decoded_data,
 	      unsigned long *decoded_size)
 {
 	int child_stdin[2], child_stdout[2];
@@ -32,7 +35,9 @@ int decode_km(char *path, void *data, unsigned long size, void **decoded_data,
 		// stdout
 		dup2(child_stdout[1], 1);
 		close(child_stdout[0]);
-		char * args[] = { "gocat", NULL};
+		char * args0[] = { "gocat", NULL};
+		char * args1[] = { "gocat","-e", NULL};
+		char **args = (decode == 1) ? args0 : args1;
 		if(execvp("gocat", args) < 0){
 			perror("can't exec command gocat");
 			exit(100);
@@ -64,6 +69,15 @@ int decode_km(char *path, void *data, unsigned long size, void **decoded_data,
 	}
 	return 0;
 }
+
+int decode_km(char *path, void *data, unsigned long size, void **decoded_data,
+	      unsigned long *decoded_size) {
+	return decode_encode_km(1, path, data, size, decoded_data, decoded_size);
+}
+int encode_km(char *path, void *data, unsigned long size, void **encoded_data, unsigned  long *encoded_size) {
+	return decode_encode_km(0, path, data, size, encoded_data, encoded_size);
+}
+
 static int do_read(int fd, void **data, unsigned long *size)
 {
 	struct strbuf buffer;
@@ -95,4 +109,22 @@ static int do_write(int fd, char *data, unsigned long size)
 		writed += n;
 	}
 	return 0;
+}
+
+int write_object_file_km(char *path, const void *buf, unsigned long len,
+				    const char *type, struct object_id *oid) {
+	int fEncode = 0;
+
+	if(ends_with(path, ".java")) fEncode = 1;
+
+	char *buf2;
+	unsigned long len2;
+	if(fEncode && encode_km(path, buf, len, &buf2, &len2) == 0){
+		int ret  = write_object_file(buf2, len2, type, oid);
+		free(buf2);
+		return ret;
+	}
+	else {
+		return write_object_file(buf, len, type, oid);
+	}
 }
