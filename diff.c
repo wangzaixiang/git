@@ -4125,10 +4125,10 @@ int diff_populate_filespec(struct repository *r,
 	if(err == 0){
 		// test for .java file only
 		// update s->data && s->size for decode
-		if(ends_with(s->path, ".java") && s->data != NULL && buffer_is_binary(s->data, s->size)){
+		if( s->data != NULL && buffer_is_binary(s->data, s->size) && is_encoded(s->data, s->size)){
 			void *buf;
 			unsigned long size;
-			int err2 = decode_km(s->path, s->data, s->size, &buf, &size);
+			int err2 = decode_km(s->data, s->size, &buf, &size);
 			if(err2 == 0){
 				free(s->data);
 				s->data = buf;

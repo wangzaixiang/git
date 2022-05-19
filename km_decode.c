@@ -13,8 +13,26 @@
 static int do_write(int fd, char *data, unsigned long size);
 static int do_read(int fd, void **data, unsigned long *size);
 
+int is_encoded(const char *data, unsigned long length){
+	if(length >= 21) {
+		return  data[0] == 0x62 &&
+			data[1] == 0x14 &&
+			data[2] == 0x23 &&
+			data[3] == 0x65 &&
+			data[12] == 'E' &&
+			data[13] == '-' &&
+			data[14] == 'S' &&
+			data[15] == 'a' &&
+			data[16] == 'f' &&
+			data[17] == 'e' &&
+			data[18] == 'N' &&
+			data[19] == 'e' &&
+			data[20] == 't';
+	}
+	else return 0;
+}
 
-static int decode_encode_km(int decode, char *path, void *data, unsigned long size, void **decoded_data,
+static int decode_encode_km(int decode, void *data, unsigned long size, void **decoded_data,
 	      unsigned long *decoded_size)
 {
 	int child_stdin[2], child_stdout[2];
@@ -70,12 +88,12 @@ static int decode_encode_km(int decode, char *path, void *data, unsigned long si
 	return 0;
 }
 
-int decode_km(char *path, void *data, unsigned long size, void **decoded_data,
+int decode_km(void *data, unsigned long size, void **decoded_data,
 	      unsigned long *decoded_size) {
-	return decode_encode_km(1, path, data, size, decoded_data, decoded_size);
+	return decode_encode_km(1,  data, size, decoded_data, decoded_size);
 }
-int encode_km(char *path, void *data, unsigned long size, void **encoded_data, unsigned  long *encoded_size) {
-	return decode_encode_km(0, path, data, size, encoded_data, encoded_size);
+int encode_km(void *data, unsigned long size, void **encoded_data, unsigned  long *encoded_size) {
+	return decode_encode_km(0, data, size, encoded_data, encoded_size);
 }
 
 static int do_read(int fd, void **data, unsigned long *size)
@@ -111,20 +129,20 @@ static int do_write(int fd, char *data, unsigned long size)
 	return 0;
 }
 
-int write_object_file_km(char *path, const void *buf, unsigned long len,
-				    const char *type, struct object_id *oid) {
-	int fEncode = 0;
-
-	if(ends_with(path, ".java")) fEncode = 1;
-
-	char *buf2;
-	unsigned long len2;
-	if(fEncode && encode_km(path, buf, len, &buf2, &len2) == 0){
-		int ret  = write_object_file(buf2, len2, type, oid);
-		free(buf2);
-		return ret;
-	}
-	else {
-		return write_object_file(buf, len, type, oid);
-	}
-}
+//int write_object_file_km(char *path, const void *buf, unsigned long len,
+//				    const char *type, struct object_id *oid) {
+//	int fEncode = 0;
+//
+//	if(ends_with(path, ".java")) fEncode = 1;
+//
+//	char *buf2;
+//	unsigned long len2;
+//	if(fEncode && encode_km(path, buf, len, &buf2, &len2) == 0){
+//		int ret  = write_object_file(buf2, len2, type, oid);
+//		free(buf2);
+//		return ret;
+//	}
+//	else {
+//		return write_object_file(buf, len, type, oid);
+//	}
+//}

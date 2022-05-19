@@ -13,6 +13,7 @@
 #include "strbuf.h"
 #include "notes-utils.h"
 #include "commit-reach.h"
+#include "km_decode.h"
 
 struct notes_merge_pair {
 	struct object_id obj, base, local, remote;
@@ -346,13 +347,19 @@ static int ll_merge_in_worktree(struct notes_merge_options *o,
 	mmfile_t base, local, remote;
 	int status;
 
-	read_mmblob_decode(NULL, &base, &p->base);
-	read_mmblob_decode(NULL, &local, &p->local);
-	read_mmblob_decode(NULL, &remote, &p->remote);
+	int is_decoded[3];
+	read_mmblob_decode(&base, &p->base, is_decoded);
+	read_mmblob_decode(&local, &p->local, is_decoded+1);
+	read_mmblob_decode(&remote, &p->remote, is_decoded+2);
+
+	int f_is_decoded = is_decoded[0] | is_decoded[1] | is_decoded[2];
 
 	status = ll_merge(&result_buf, oid_to_hex(&p->obj), &base, NULL,
 			  &local, o->local_ref, &remote, o->remote_ref,
 			  o->repo->index, NULL);
+
+	if(f_is_decoded) do_encode_mmbuffer(&result_buf);
+
 
 	free(base.ptr);
 	free(local.ptr);

@@ -22,6 +22,7 @@
 #include "rerere.h"
 #include "apply.h"
 #include "entry.h"
+#include "km_decode.h"
 
 struct gitdiff_data {
 	struct strbuf *root;
@@ -3500,15 +3501,21 @@ static int three_way_merge(struct apply_state *state,
 	else if (oideq(base, theirs) || oideq(ours, theirs))
 		return resolve_to(image, ours);
 
-	read_mmblob_decode(path, &base_file, base);
-	read_mmblob_decode(path, &our_file, ours);
-	read_mmblob_decode(path, &their_file, theirs);
+	int is_decoded[3];
+	read_mmblob_decode(&base_file, base, is_decoded);
+	read_mmblob_decode(&our_file, ours, is_decoded+1);
+	read_mmblob_decode(&their_file, theirs, is_decoded+2);
+	int f_is_decoded = is_decoded[0] | is_decoded[1] | is_decoded[2];
+
 	status = ll_merge(&result, path,
 			  &base_file, "base",
 			  &our_file, "ours",
 			  &their_file, "theirs",
 			  state->repo->index,
 			  NULL);
+
+	if(f_is_decoded) do_encode_mmbuffer(&result);
+
 	free(base_file.ptr);
 	free(our_file.ptr);
 	free(their_file.ptr);

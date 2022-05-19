@@ -188,10 +188,10 @@ static int cat_one_file(int opt, const char *exp_type, const char *obj_name,
 	if (!buf)
 		die("git cat-file %s: bad file", obj_name);
 
-	if(ends_with(obj_name, ".java")){
+	if(is_encoded(buf, size)){
 		void *decoded_data = NULL;
-		long decoded_size;
-		if(decode_km(obj_name, buf, size, &decoded_data, &decoded_size) == 0){
+		unsigned long decoded_size;
+		if(decode_km(buf, size, &decoded_data, &decoded_size) == 0){
 			free(buf);
 			buf = decoded_data;
 			size = decoded_size;

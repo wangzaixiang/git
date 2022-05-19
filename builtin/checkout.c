@@ -28,6 +28,7 @@
 #include "xdiff-interface.h"
 #include "entry.h"
 #include "parallel-checkout.h"
+#include "km_decode.h"
 
 static const char * const checkout_usage[] = {
 	N_("git checkout [<options>] <branch>"),
@@ -268,9 +269,11 @@ static int checkout_merged(int pos, const struct checkout *state,
 	if (is_null_oid(&threeway[1]) || is_null_oid(&threeway[2]))
 		return error(_("path '%s' does not have necessary versions"), path);
 
-	read_mmblob_decode(NULL, &ancestor, &threeway[0]);
-	read_mmblob_decode(NULL, &ours, &threeway[1]);
-	read_mmblob_decode(NULL, &theirs, &threeway[2]);
+	int is_decoded[3];
+	read_mmblob_decode(&ancestor, &threeway[0], is_decoded);
+	read_mmblob_decode(&ours, &threeway[1], is_decoded+1);
+	read_mmblob_decode(&theirs, &threeway[2], is_decoded+2);
+	int f_is_decoded = is_decoded[0] | is_decoded[1] | is_decoded[2];
 
 	memset(&ll_opts, 0, sizeof(ll_opts));
 	git_config_get_bool("merge.renormalize", &renormalize);
@@ -278,6 +281,9 @@ static int checkout_merged(int pos, const struct checkout *state,
 	status = ll_merge(&result_buf, path, &ancestor, "base",
 			  &ours, "ours", &theirs, "theirs",
 			  state->istate, &ll_opts);
+
+	if(f_is_decoded) do_encode_mmbuffer(&result_buf);
+
 	free(ancestor.ptr);
 	free(ours.ptr);
 	free(theirs.ptr);

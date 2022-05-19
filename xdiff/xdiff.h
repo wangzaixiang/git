@@ -72,10 +72,13 @@ typedef struct s_mmfile {
 	long size;
 } mmfile_t;
 
+void do_encode(mmfile_t *mmfile);
+
 typedef struct s_mmbuffer {
 	char *ptr;
 	long size;
 } mmbuffer_t;
+void do_encode_mmbuffer(mmbuffer_t *mmbuffer);
 
 typedef struct s_xpparam {
 	unsigned long flags;

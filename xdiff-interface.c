@@ -190,12 +190,15 @@ void read_mmblob(mmfile_t *ptr, const struct object_id *oid)
 	ptr->size = size;
 }
 
-void read_mmblob_decode(char *path, mmfile_t *ptr, const struct object_id *oid) {
+void read_mmblob_decode(mmfile_t *ptr, const struct object_id *oid, int *is_data_encoded) {
+	*is_data_encoded = 0;
+	ptr->ptr = NULL;
 	read_mmblob(ptr, oid);
-	if(ptr->ptr != NULL) {
+	if(ptr->ptr != NULL && is_encoded(ptr->ptr, ptr->size)) {
+		*is_data_encoded = 1;
 		void *buffer;
 		unsigned long size;
-		if( decode_km(path, ptr->ptr, ptr->size, &buffer, &size) == 0){
+		if( decode_km(ptr->ptr, ptr->size, &buffer, &size) == 0){
 			free(ptr->ptr);
 			ptr->ptr = buffer;
 			ptr->size = size;

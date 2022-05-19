@@ -30,6 +30,7 @@
 #include "tree-walk.h"
 #include "unpack-trees.h"
 #include "xdiff-interface.h"
+#include "km_decode.h"
 
 struct merge_options_internal {
 	int call_depth;
@@ -1078,18 +1079,24 @@ static int merge_3way(struct merge_options *opt,
 		name2 = mkpathdup("%s", branch2);
 	}
 
-	read_mmblob_decode(NULL, &orig, &o->oid);
-	read_mmblob_decode(NULL, &src1, &a->oid);
-	read_mmblob_decode(NULL, &src2, &b->oid);
+	int is_decoded[3];
+	read_mmblob_decode( &orig, &o->oid, is_decoded);
+	read_mmblob_decode(&src1, &a->oid, is_decoded+1);
+	read_mmblob_decode(&src2, &b->oid, is_decoded+2);
+
+	int f_is_decoded = is_decoded[0] | is_decoded[1] | is_decoded[2];
 
 	/*
 	 * FIXME: Using a->path for normalization rules in ll_merge could be
 	 * wrong if we renamed from a->path to b->path.  We should use the
 	 * target path for where the file will be written.
 	 */
+	result_buf->ptr = NULL;
 	merge_status = ll_merge(result_buf, a->path, &orig, base,
 				&src1, name1, &src2, name2,
 				opt->repo->index, &ll_opts);
+
+	if(f_is_decoded) do_encode_mmbuffer(result_buf);
 
 	free(base);
 	free(name1);

@@ -5,9 +5,11 @@
 #ifndef GIT_KM_DECODE_H
 #define GIT_KM_DECODE_H
 
-int decode_km(char *path, void *data, unsigned long size, void **decoded_data,
-	      unsigned long *decoded_size);
+int is_encoded(const char *data, unsigned long length);
 
-int write_object_file_km(char *path, const void *buf, unsigned long len,
-			 const char *type, struct object_id *oid);
+int decode_km(void *data, unsigned long size, void **decoded_data,
+	      unsigned long *decoded_size);
+int encode_km(void *data, unsigned long size, void **encoded_data,
+	      unsigned  long *encoded_size);
+
 #endif // GIT_KM_DECODE_H

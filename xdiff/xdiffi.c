@@ -21,6 +21,7 @@
  */
 
 #include "xinclude.h"
+#include "km_decode.h"
 
 #define XDL_MAX_COST_MIN 256
 #define XDL_HEUR_MIN_COST 256
@@ -1050,6 +1051,26 @@ static void xdl_mark_ignorable_regex(xdchange_t *xscr, const xdfenv_t *xe,
 			ignore = record_matches_regex(rec[i], xpp);
 
 		xch->ignore = ignore;
+	}
+}
+
+void do_encode(mmfile_t *mmfile) {
+	void *buf2;
+	unsigned long len2;
+	if( mmfile->ptr != NULL && encode_km(mmfile->ptr, mmfile->size, &buf2, &len2) == 0){
+		free((mmfile->ptr));
+		mmfile->ptr = buf2;
+		mmfile->size = len2;
+	}
+}
+
+void do_encode_mmbuffer(mmbuffer_t *mmfile) {
+	void *buf2;
+	unsigned long len2;
+	if( mmfile->ptr != NULL && encode_km(mmfile->ptr, mmfile->size, &buf2, &len2) == 0){
+		free((mmfile->ptr));
+		mmfile->ptr = buf2;
+		mmfile->size = len2;
 	}
 }
 

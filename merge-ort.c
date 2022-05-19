@@ -1739,7 +1739,7 @@ static int merge_3way(struct merge_options *opt,
 		      const struct object_id *b,
 		      const char *pathnames[3],
 		      const int extra_marker_size,
-		      mmbuffer_t *result_buf)
+		      mmbuffer_t *result_buf )
 {
 	mmfile_t orig, src1, src2;
 	struct ll_merge_options ll_opts = {0};
@@ -1781,13 +1781,18 @@ static int merge_3way(struct merge_options *opt,
 		name2 = mkpathdup("%s:%s", opt->branch2,  pathnames[2]);
 	}
 
-	read_mmblob_decode(path, &orig, o);
-	read_mmblob_decode(path, &src1, a);
-	read_mmblob_decode(path, &src2, b);
+	int is_data_encoded[3];
+	read_mmblob_decode(&orig, o, is_data_encoded);
+	read_mmblob_decode(&src1, a, is_data_encoded+1);
+	read_mmblob_decode(&src2, b, is_data_encoded+2);
+
+	int f_data_encoded = is_data_encoded[0] | is_data_encoded[1] | is_data_encoded[2];
 
 	merge_status = ll_merge(result_buf, path, &orig, base,
 				&src1, name1, &src2, name2,
 				&opt->priv->attr_index, &ll_opts);
+
+	if(f_data_encoded) do_encode_mmbuffer(result_buf);
 
 	free(base);
 	free(name1);
@@ -1888,7 +1893,7 @@ static int handle_content_merge(struct merge_options *opt,
 			ret = err(opt, _("Failed to execute internal merge"));
 
 		if (!ret &&
-		    write_object_file_km(path, result_buf.ptr, result_buf.size,
+		    write_object_file( result_buf.ptr, result_buf.size,
 				      blob_type, &result->oid))
 			ret = err(opt, _("Unable to add %s to database"),
 				  path);
