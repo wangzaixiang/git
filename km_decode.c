@@ -74,8 +74,9 @@ static int decode_encode_km(int decode, void *data, unsigned long size, void **d
 		}
 
 		int status = 0;
+		close(child_stdout[0]);
 		if(waitpid(child, &status, 0) <0){
-			close(child_stdout[0]);
+//			close(child_stdout[0]);
 			return -5;
 		}
 		if(WIFEXITED(status)){
