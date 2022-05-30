@@ -15,19 +15,19 @@ static int do_read(int fd, void **data, unsigned long *size);
 
 int is_encoded(const char *data, unsigned long length){
 	if(length >= 21) {
-		return  data[0] == 0x62 &&
+		return  (data[0] == 0x62 || data[0] == 0x77) &&
 			data[1] == 0x14 &&
 			data[2] == 0x23 &&
-			data[3] == 0x65 &&
-			data[12] == 'E' &&
-			data[13] == '-' &&
-			data[14] == 'S' &&
-			data[15] == 'a' &&
+			data[3] == 0x65 /* &&
+			data[12] == 0x45 &&
+			data[13] == 0x2d &&
+			data[14] == 0x53 &&
+			data[15] == 0x61 &&
 			data[16] == 'f' &&
 			data[17] == 'e' &&
 			data[18] == 'N' &&
 			data[19] == 'e' &&
-			data[20] == 't';
+			data[20] == 't' */;
 	}
 	else return 0;
 }
